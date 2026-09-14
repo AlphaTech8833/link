@@ -3,20 +3,20 @@
   	const ind = url.searchParams.get("jcfd");
 
   	const blogurls = [
-        'https://cars.jobsnewinfo.com/2025/09/20/2025-honda-civic-hybrid-sport-touring-sedan-review/',
-		'https://cars.jobsnewinfo.com/2025/10/02/honda-amaze-2025-launched-in-india/',
-		'https://cars.jobsnewinfo.com/2025/10/02/tata-punch-2025-launched/',
-		'https://cars.jobsnewinfo.com/2025/10/03/maruti-suzuki-wagon-r-7-seater/',
-		'https://cars.jobsnewinfo.com/2025/11/15/skoda-hits-record-highs-doubles-quarterly-sales-thanks-to-kylaq/',
-		'https://cars.jobsnewinfo.com/2025/11/17/2025-mahindra-bolero-launched-at-%e2%82%b97-99-lakh-full-details-features-and-review/',
-		'https://cars.jobsnewinfo.com/2025/11/15/tata-harrier-petrol-test-mule-spotted-in-mumbai-whats-brewing/',
-		'https://cars.jobsnewinfo.com/2025/11/08/new-2025-toyota-corolla/',
-		'https://cars.jobsnewinfo.com/2025/11/08/toyota-mini-fortuner-2025/',
-		'https://cars.jobsnewinfo.com/2025/11/15/toyota-crown-signia-2025/',
-		'https://cars.jobsnewinfo.com/2025/11/20/ford-recalls-200000-bronco-and-bronco-sport/',
-		'https://cars.jobsnewinfo.com/2025/11/20/2026-jeep-recon-ev-debuts-at-65000/',
-		'https://cars.jobsnewinfo.com/2025/12/12/mahindra-be-6-the-futuristic-electric-coupe-suv-ready-to-redefine-indian-ev-market/',
-		'https://cars.jobsnewinfo.com/2025/12/12/hyundai-ioniq-6-the-electric-streamliner-redefining-future-mobility/'
+        'https://demo2.alphademo.site/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/',
+		'https://demo2.alphademo.site/2026/09/03/hello-world/'
     ];
 
   	if (ind) {
