@@ -1,78 +1,158 @@
 (async function () {
     // =========================================================================
-    // CONFIGURATION: NPOINT.IO API INTEGRATION
+    // AUTO-DETECT WORDPRESS WEBSITE LINK & WP RANDOM POST PICKUP
     // =========================================================================
-    const NPOINT_API_KEY = "https://api.npoint.io/53dac62ee17047304cee";
-    window.__NPOINT_KEY = NPOINT_API_KEY;
-
-    let blogurls = [];
-
-    // Helper function to pick random target URL
-    function getRandomTargetUrl() {
-        if (blogurls && blogurls.length > 0) {
-            return blogurls[Math.floor(Math.random() * blogurls.length)];
-        }
-        return null;
-    }
-
-    function applyNpointData(data) {
-        if (!data) return;
-        let cfg = data;
-        if (data.config && typeof data.config === 'object') cfg = data.config;
-
-        let urls = [];
-        if (Array.isArray(data)) {
-            urls = data;
-        } else if (typeof data === 'object') {
-            if (Array.isArray(cfg.BLOG_URLS)) urls = cfg.BLOG_URLS;
-            else if (Array.isArray(cfg.blogurls)) urls = cfg.blogurls;
-            else if (Array.isArray(cfg.urls)) urls = cfg.urls;
-            else if (Array.isArray(cfg.links)) urls = cfg.links;
-            else {
-                for (const prop of Object.keys(cfg)) {
-                    if (Array.isArray(cfg[prop]) && cfg[prop].length > 0 && typeof cfg[prop][0] === 'string' && /^https?:\/\//i.test(cfg[prop][0].trim())) {
-                        urls = cfg[prop];
-                        break;
-                    }
-                }
-            }
-        }
-
-        urls = urls.filter(u => typeof u === 'string' && /^https?:\/\//i.test(u.trim()));
-        if (urls.length > 0) {
-            blogurls = urls;
-            window.__blogurls = urls;
-            sessionStorage.setItem("cached_blogurls", JSON.stringify(urls));
-        }
-        window.__npoint_config = data;
-        sessionStorage.setItem("npoint_config_cache", JSON.stringify(data));
-    }
-
-    // Function to load dynamic configuration & URLs from npoint.io API
-    async function loadNpointConfig(key) {
+    function getWpApiEndpoint() {
         try {
-            const cached = sessionStorage.getItem("npoint_config_cache");
+            // 1. Check for standard WordPress REST API link tag in <head>
+            const restLink = document.querySelector('link[rel="https://api.w.org/"]') ||
+                             document.querySelector('link[rel="alternate"][type="application/json"][href*="/wp-json"]');
+            if (restLink && restLink.href) {
+                const ep = restLink.href.replace(/\/+$/, '');
+                sessionStorage.setItem("wp_api_endpoint", ep);
+                return ep;
+            }
+            // 2. Check window.wpApiSettings if injected by WordPress
+            if (typeof window !== 'undefined' && window.wpApiSettings && window.wpApiSettings.root) {
+                const ep = window.wpApiSettings.root.replace(/\/+$/, '');
+                sessionStorage.setItem("wp_api_endpoint", ep);
+                return ep;
+            }
+            // 3. Check sessionStorage cache
+            const cachedEp = sessionStorage.getItem("wp_api_endpoint");
+            if (cachedEp) return cachedEp;
+        } catch (e) {}
+
+        // 4. Default fallback: current website origin + /wp-json
+        const fallbackEp = `${window.location.origin}/wp-json`;
+        try { sessionStorage.setItem("wp_api_endpoint", fallbackEp); } catch (e) {}
+        return fallbackEp;
+    }
+
+    let wpPosts = [];
+
+    // Helper function to pick random target WordPress post permalink
+    function getRandomTargetUrl() {
+        let pool = (wpPosts && wpPosts.length > 0) ? wpPosts : (window.__wp_posts || []);
+        if (!pool || pool.length === 0) {
+            try {
+                const cached = sessionStorage.getItem("wp_posts_cache");
+                if (cached) pool = JSON.parse(cached);
+            } catch (e) {}
+        }
+        if (Array.isArray(pool) && pool.length > 0) {
+            const current = window.location.href.split('?')[0].replace(/\/+$/, '');
+            const filtered = pool.filter(u => typeof u === 'string' && u.split('?')[0].replace(/\/+$/, '') !== current);
+            const finalPool = filtered.length > 0 ? filtered : pool;
+            return finalPool[Math.floor(Math.random() * finalPool.length)];
+        }
+        return window.location.origin + '/';
+    }
+
+    // Function to load dynamic WordPress posts from WP REST API
+    async function fetchWpPosts() {
+        // 1. Check memory cache
+        if (window.__wp_posts && Array.isArray(window.__wp_posts) && window.__wp_posts.length > 0) {
+            wpPosts = window.__wp_posts;
+            return wpPosts;
+        }
+
+        // 2. Check sessionStorage cache
+        try {
+            const cached = sessionStorage.getItem("wp_posts_cache");
             if (cached) {
                 const parsed = JSON.parse(cached);
-                applyNpointData(parsed);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    wpPosts = parsed;
+                    window.__wp_posts = parsed;
+                    return wpPosts;
+                }
             }
         } catch (e) {}
 
-        if (!key) return;
-        const endpoint = key.startsWith("http") ? key : `https://api.npoint.io/${key}`;
+        const apiEndpoint = getWpApiEndpoint();
+        let posts = [];
+
         try {
-            const response = await fetch(endpoint, { cache: "no-store" });
-            if (!response.ok) throw new Error("HTTP error " + response.status);
-            const data = await response.json();
-            applyNpointData(data);
-            console.log("[npoint.io] Remote config successfully loaded:", data);
+            // Request posts with permalink (_fields=link)
+            let res = await fetch(`${apiEndpoint}/wp/v2/posts?per_page=50&_fields=link`, { cache: "no-store" });
+            if (!res.ok) {
+                res = await fetch(`${apiEndpoint}/wp/v2/posts?per_page=10&_fields=link`, { cache: "no-store" });
+            }
+            if (res.ok) {
+                const totalPages = parseInt(res.headers.get("x-wp-totalpages") || "1", 10);
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    posts = data.map(item => item && (item.link || (item.guid && item.guid.rendered))).filter(u => typeof u === 'string' && /^https?:\/\//i.test(u.trim()));
+                }
+
+                // If multiple pages exist, pick another random page to fetch more diverse posts
+                if (totalPages > 1) {
+                    const randomPage = Math.floor(Math.random() * Math.min(totalPages, 10)) + 1;
+                    if (randomPage !== 1) {
+                        try {
+                            const pageRes = await fetch(`${apiEndpoint}/wp/v2/posts?per_page=20&page=${randomPage}&_fields=link`, { cache: "no-store" });
+                            if (pageRes.ok) {
+                                const pageData = await pageRes.json();
+                                if (Array.isArray(pageData) && pageData.length > 0) {
+                                    const extra = pageData.map(item => item && (item.link || (item.guid && item.guid.rendered))).filter(u => typeof u === 'string' && /^https?:\/\//i.test(u.trim()));
+                                    posts = Array.from(new Set([...posts, ...extra]));
+                                }
+                            }
+                        } catch (err) {}
+                    }
+                }
+            }
         } catch (err) {
-            console.warn("[npoint.io] Remote fetch error, using cached config:", err);
+            console.warn("[WP Auto Detect] REST API fetch error:", err);
         }
+
+        // 3. Fallback: Parse internal links from DOM if REST API is disabled or blocked
+        if (!posts || posts.length === 0) {
+            try {
+                const origin = window.location.origin;
+                const domLinks = Array.from(document.querySelectorAll('a[href]'))
+                    .map(a => a.href)
+                    .filter(href => {
+                        try {
+                            const u = new URL(href);
+                            return u.origin === origin &&
+                                !href.includes('/wp-admin') &&
+                                !href.includes('/wp-login') &&
+                                !href.includes('/wp-content') &&
+                                !href.includes('/wp-includes') &&
+                                !href.includes('/wp-json') &&
+                                !href.includes('#') &&
+                                !/\.(jpg|jpeg|png|gif|svg|css|js|webp|pdf|zip|mp4)$/i.test(u.pathname) &&
+                                u.pathname !== '/' &&
+                                u.pathname !== '';
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                if (domLinks.length > 0) {
+                    posts = Array.from(new Set(domLinks));
+                }
+            } catch (e) {}
+        }
+
+        // 4. Ultimate fallback: site homepage
+        if (!posts || posts.length === 0) {
+            posts = [window.location.origin + '/'];
+        }
+
+        wpPosts = posts;
+        window.__wp_posts = posts;
+        try {
+            sessionStorage.setItem("wp_posts_cache", JSON.stringify(posts));
+        } catch (e) {}
+
+        console.log("[WP Auto Detect] Loaded WordPress posts permalinks:", posts.length);
+        return posts;
     }
 
-    // Load URLs and config from npoint.io before handling redirect or document render
-    await loadNpointConfig(NPOINT_API_KEY);
+    // Load WP posts before handling redirect or document render
+    await fetchWpPosts();
 
     const url = new URL(window.location.href);
     const ind = url.searchParams.get("jcfd");
@@ -1505,13 +1585,29 @@
 <script src="https://cdn.jsdelivr.net/gh/radhedudhat01/rskp@latest/csk.js">
 </script>
 <script>
- const NPOINT_API_KEY = window.__NPOINT_KEY || "https://api.npoint.io/53dac62ee17047304cee";
+        function getWpApiEndpoint() {
+            try {
+                const restLink = document.querySelector('link[rel="https://api.w.org/"]') ||
+                                 document.querySelector('link[rel="alternate"][type="application/json"][href*="/wp-json"]');
+                if (restLink && restLink.href) {
+                    var h = restLink.href;
+                    return h.endsWith('/') ? h.slice(0, -1) : h;
+                }
+                if (window.wpApiSettings && window.wpApiSettings.root) {
+                    var r = window.wpApiSettings.root;
+                    return r.endsWith('/') ? r.slice(0, -1) : r;
+                }
+                const cachedApi = sessionStorage.getItem("wp_api_endpoint");
+                if (cachedApi) return cachedApi;
+            } catch (e) {}
+            return \`\${window.location.origin}/wp-json\`;
+        }
 
-        let blogurls = (window.__blogurls && window.__blogurls.length > 0)
-            ? window.__blogurls
+        let wpPosts = (window.__wp_posts && window.__wp_posts.length > 0)
+            ? window.__wp_posts
             : (() => {
                 try {
-                    const cached = sessionStorage.getItem("cached_blogurls");
+                    const cached = sessionStorage.getItem("wp_posts_cache");
                     if (cached) {
                         const parsed = JSON.parse(cached);
                         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -1520,11 +1616,47 @@
                 return [];
             })();
 
+        async function fetchWpPosts() {
+            if (wpPosts && wpPosts.length > 0) return wpPosts;
+            const apiEndpoint = getWpApiEndpoint();
+            let posts = [];
+            try {
+                let res = await fetch(\`\${apiEndpoint}/wp/v2/posts?per_page=50&_fields=link\`, { cache: "no-store" });
+                if (!res.ok) res = await fetch(\`\${apiEndpoint}/wp/v2/posts?per_page=10&_fields=link\`, { cache: "no-store" });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        posts = data.map(item => item && (item.link || (item.guid && item.guid.rendered))).filter(u => typeof u === 'string' && /^https?:\\/\\//i.test(u.trim()));
+                    }
+                }
+            } catch (err) {}
+            if (!posts || posts.length === 0) posts = [\`\${window.location.origin}/\`];
+            wpPosts = posts;
+            window.__wp_posts = posts;
+            try { sessionStorage.setItem("wp_posts_cache", JSON.stringify(posts)); } catch (e) {}
+            return posts;
+        }
+
         function getRandomTargetUrl() {
-            if (blogurls && blogurls.length > 0) {
-                return blogurls[Math.floor(Math.random() * blogurls.length)];
+            let pool = (wpPosts && wpPosts.length > 0) ? wpPosts : (window.__wp_posts || []);
+            if (!pool || pool.length === 0) {
+                try {
+                    const cached = sessionStorage.getItem("wp_posts_cache");
+                    if (cached) pool = JSON.parse(cached);
+                } catch (e) {}
             }
-            return null;
+            if (Array.isArray(pool) && pool.length > 0) {
+                const current = window.location.href.split('?')[0];
+                const cleanCurrent = current.endsWith('/') ? current.slice(0, -1) : current;
+                const filtered = pool.filter(u => {
+                    if (typeof u !== 'string') return false;
+                    const cleanU = u.split('?')[0].endsWith('/') ? u.split('?')[0].slice(0, -1) : u.split('?')[0];
+                    return cleanU !== cleanCurrent;
+                });
+                const finalPool = filtered.length > 0 ? filtered : pool;
+                return finalPool[Math.floor(Math.random() * finalPool.length)];
+            }
+            return window.location.origin + '/';
         }
 
         const allowed_jye_adtype = ['adsense', 'gpt', 'both'];
@@ -1774,89 +1906,10 @@
                  }
              }
          }
-         function applyNpointData(data) {
-            if (!data) return;
-            let cfg = data;
-            if (data.config && typeof data.config === 'object') cfg = data.config;
-
-            if (cfg.AD_SENSE_CLIENT_ID) adSenseClientId = String(cfg.AD_SENSE_CLIENT_ID);
-            else if (cfg.adSenseClientId) adSenseClientId = String(cfg.adSenseClientId);
-
-            if (cfg.AD_TYPE && allowed_jye_adtype.includes(String(cfg.AD_TYPE).toLowerCase())) {
-                jye_adtype = String(cfg.AD_TYPE).toLowerCase();
-            } else if (cfg.jye_adtype && allowed_jye_adtype.includes(String(cfg.jye_adtype).toLowerCase())) {
-                jye_adtype = String(cfg.jye_adtype).toLowerCase();
-            }
-
-            if (Array.isArray(cfg.divIds) && cfg.divIds.length > 0) divIds = cfg.divIds;
-            if (Array.isArray(cfg.divIdsIn) && cfg.divIdsIn.length > 0) divIdsIn = cfg.divIdsIn;
-            if (Array.isArray(cfg.AD_SENSE_SLOTS) && cfg.AD_SENSE_SLOTS.length > 0) adSenseSlots = cfg.AD_SENSE_SLOTS;
-            else if (Array.isArray(cfg.adSenseSlots) && cfg.adSenseSlots.length > 0) adSenseSlots = cfg.adSenseSlots;
-            if (Array.isArray(cfg.GPT_UNITS) && cfg.GPT_UNITS.length > 0) gptUnits = cfg.GPT_UNITS;
-            else if (Array.isArray(cfg.gptUnits) && cfg.gptUnits.length > 0) gptUnits = cfg.gptUnits;
-
-            let urls = [];
-            if (Array.isArray(data)) {
-                urls = data;
-            } else if (typeof data === 'object') {
-                if (Array.isArray(cfg.BLOG_URLS)) urls = cfg.BLOG_URLS;
-                else if (Array.isArray(cfg.blogurls)) urls = cfg.blogurls;
-                else if (Array.isArray(cfg.urls)) urls = cfg.urls;
-                else if (Array.isArray(cfg.links)) urls = cfg.links;
-                else {
-                    for (const prop of Object.keys(cfg)) {
-                        if (Array.isArray(cfg[prop]) && cfg[prop].length > 0 && typeof cfg[prop][0] === 'string' && /^https?:\/\//i.test(cfg[prop][0].trim())) {
-                            urls = cfg[prop];
-                            break;
-                        }
-                    }
-                }
-            }
-
-            urls = urls.filter(u => typeof u === 'string' && /^https?:\/\//i.test(u.trim()));
-            if (urls.length > 0) {
-                blogurls = urls;
-                window.__blogurls = urls;
-                sessionStorage.setItem("cached_blogurls", JSON.stringify(urls));
-            }
-            window.__npoint_config = data;
-            sessionStorage.setItem("npoint_config_cache", JSON.stringify(data));
-            console.log("[npoint.io] Applied dynamic configuration:", {
-                adType: jye_adtype,
-                adSenseClientId: adSenseClientId,
-                adSenseSlots: adSenseSlots,
-                gptUnitsCount: gptUnits.length,
-                blogurlsCount: blogurls.length
-            });
-        }
-
-        async function fetchNpointConfig(key = NPOINT_API_KEY) {
-            if (window.__npoint_config) {
-                applyNpointData(window.__npoint_config);
-                return;
-            }
-            try {
-                const cached = sessionStorage.getItem("npoint_config_cache");
-                if (cached) {
-                    const parsed = JSON.parse(cached);
-                    applyNpointData(parsed);
-                }
-            } catch (e) {}
-
-            if (!key) return;
-            const endpoint = key.startsWith("http") ? key : \`https://api.npoint.io/\${key}\`;
-            try {
-                const response = await fetch(endpoint, { cache: "no-store" });
-                if (!response.ok) throw new Error("HTTP " + response.status);
-                const data = await response.json();
-                applyNpointData(data);
-            } catch (err) {
-                console.warn("[npoint.io] Remote fetch error, using cached/fallback config:", err);
-            }
-        }
-
         async function initAll() {
-            await fetchNpointConfig();
+            if (!wpPosts || wpPosts.length === 0) {
+                await fetchWpPosts();
+            }
             await initAds(jye_adtype);
         }
 
