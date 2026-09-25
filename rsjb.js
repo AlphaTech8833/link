@@ -156,7 +156,7 @@
 
     if (ind) {
         sessionStorage.setItem("jcfd", ind);
-        sessionStorage.setItem("jcfdtime", Date.now() + 5 * 60 * 1000);
+        sessionStorage.setItem("jcfdtime", (Date.now() + 60 * 1000).toString());
         url.searchParams.delete("jcfd");
         const targetUrl = getRandomTargetUrl();
         if (targetUrl) {
@@ -165,7 +165,8 @@
         }
     }
 
-    if (Date.now() > sessionStorage.getItem("jcfdtime")) {
+    const expTime = parseInt(sessionStorage.getItem("jcfdtime") || "0", 10);
+    if (expTime && Date.now() > expTime) {
         sessionStorage.removeItem("jcfdtime");
         sessionStorage.removeItem("jcfd");
     }
@@ -1326,7 +1327,7 @@
             <header id="header">
                 <div class="topHeader">
                     <div class="logo-area" id="js_navigationMenu" onclick="window.scrollTo({top:0, behavior:'smooth'});">
-                        <div class="logo-icon">🎬 MovieVerse</div>
+                        <div class="logo-icon">ðŸŽ¬ MovieVerse</div>
                         <span class="logo-tag">4K UHD</span>
                     </div>
                     <div class="searchInput" id="search_toggle">
@@ -1335,7 +1336,7 @@
                     </div>
                     <div class="header-actions">
                         <button class="vip-btn" onclick="openVipModal();">
-                            <span>⭐ VIP PASS</span>
+                            <span>â­ VIP PASS</span>
                         </button>
                     </div>
                 </div>
@@ -1379,14 +1380,14 @@
                 <div class="watch-contentWrapper">
                     <div class="topTitleWrap">
                         <div class="movie-meta-bar">
-                            <span class="badge-imdb">★ 8.8 IMDb</span>
+                            <span class="badge-imdb">â˜… 8.8 IMDb</span>
                             <span class="badge-quality">4K ULTRA HD</span>
                             <span class="badge-meta">2024</span>
-                            <span class="badge-meta">•</span>
+                            <span class="badge-meta">â€¢</span>
                             <span class="badge-meta">2h 12m</span>
-                            <span class="badge-meta">•</span>
+                            <span class="badge-meta">â€¢</span>
                             <span class="badge-audio">Dolby Atmos 7.1</span>
-                            <span class="badge-meta">•</span>
+                            <span class="badge-meta">â€¢</span>
                             <span class="badge-meta">Dual Audio [Hindi + Eng]</span>
                         </div>
                         <h1 class="videoTitle tm_videoTitle" id="randomtitle5">
@@ -1406,13 +1407,13 @@
                     <div class="server-switcher-bar">
                         <div class="server-buttons-group">
                             <span class="server-label">SERVER:</span>
-                            <button class="server-btn active" data-server="1" onclick="switchServer(1, this);">⚡ Server 1 [VIP 4K]</button>
-                            <button class="server-btn" data-server="2" onclick="switchServer(2, this);">🚀 Server 2 [Fast CDN]</button>
-                            <button class="server-btn" data-server="3" onclick="switchServer(3, this);">🎬 Server 3 [Multi-Audio]</button>
-                            <button class="server-btn" data-server="4" onclick="switchServer(4, this);">🌐 Server 4 [StreamSB]</button>
+                            <button class="server-btn active" data-server="1" onclick="switchServer(1, this);">âš¡ Server 1 [VIP 4K]</button>
+                            <button class="server-btn" data-server="2" onclick="switchServer(2, this);">ðŸš€ Server 2 [Fast CDN]</button>
+                            <button class="server-btn" data-server="3" onclick="switchServer(3, this);">ðŸŽ¬ Server 3 [Multi-Audio]</button>
+                            <button class="server-btn" data-server="4" onclick="switchServer(4, this);">ðŸŒ Server 4 [StreamSB]</button>
                         </div>
                         <button class="custom-link-btn" onclick="openCustomLinkModal();">
-                            <span>🔗 Add / Change Video Link</span>
+                            <span>ðŸ”— Add / Change Video Link</span>
                         </button>
                     </div>
 
@@ -1433,7 +1434,7 @@
 
                         <!-- 30-Second Preview Timer Badge -->
                         <div id="previewBadgeContainer" class="preview-badge-container">
-                            <span id="previewTimerBadge">⏱ Preview: 00:30 / 00:30</span>
+                            <span id="previewTimerBadge">â± Preview: 00:30 / 00:30</span>
                             <div class="preview-progress-track">
                                 <div id="previewProgressBar" class="preview-progress-bar"></div>
                             </div>
@@ -1442,12 +1443,12 @@
                         <!-- 30-Second Preview Expired Paywall Overlay -->
                         <div id="previewLockedOverlay" class="preview-locked-overlay">
                             <div class="locked-card">
-                                <div class="locked-icon">🔒</div>
+                                <div class="locked-icon">ðŸ”’</div>
                                 <h3>30-Second Preview Ended</h3>
                                 <p>You have reached the free 30-second preview limit. Unlock full unlimited 4K streaming or switch to another server.</p>
                                 <div class="locked-actions">
-                                    <button class="locked-btn replay-btn" onclick="replayPreview();">🔄 Replay Preview (30s)</button>
-                                    <button class="locked-btn vip-btn" onclick="openVipModal();">⭐ Unlock VIP 4K</button>
+                                    <button class="locked-btn replay-btn" onclick="replayPreview();">ðŸ”„ Replay Preview (30s)</button>
+                                    <button class="locked-btn vip-btn" onclick="openVipModal();">â­ Unlock VIP 4K</button>
                                 </div>
                             </div>
                         </div>
@@ -1462,26 +1463,26 @@
                     <div class="watch-metadata">
                         <div class="action-group">
                             <div class="action-btn" id="likeBtn" onclick="toggleLike();">
-                                <span>👍</span>
+                                <span>ðŸ‘</span>
                                 <span id="randomrating1">284K</span>
                             </div>
                             <div class="action-btn" id="dislikeBtn" onclick="toggleDislike();">
-                                <span>👎</span>
+                                <span>ðŸ‘Ž</span>
                             </div>
                             <div class="action-btn">
-                                <span>👁</span>
+                                <span>ðŸ‘</span>
                                 <span id="randomviews1">3.8M Views</span>
                             </div>
                         </div>
                         <div class="action-group">
                             <button class="action-btn download-btn" onclick="openDownloadModal();">
-                                <span>📥 Download 4K</span>
+                                <span>ðŸ“¥ Download 4K</span>
                             </button>
                             <button class="action-btn" onclick="toggleWatchlist(this);">
-                                <span>❤️ Watchlist</span>
+                                <span>â¤ï¸ Watchlist</span>
                             </button>
                             <button class="action-btn" onclick="shareMovie();">
-                                <span>↗ Share</span>
+                                <span>â†— Share</span>
                             </button>
                         </div>
                     </div>
@@ -1533,7 +1534,7 @@
                     <div class="movie-card js_video-box" data-id="1" data-title="Deadpool & Wolverine (2024)" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="1" id="randomimage1" src="https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg" alt="Deadpool &amp; Wolverine" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.8</div>
+                            <div class="card-badge-rating">â˜… 8.8</div>
                             <div class="card-badge-quality">4K UHD</div>
                             <div class="card-badge-duration" id="randomsecond1">2h 08m</div>
                             <div class="card-play-overlay">
@@ -1553,7 +1554,7 @@
                     <div class="movie-card js_video-box" data-id="2" data-title="Dune: Part Two (2024)" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="2" id="randomimage2" src="https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg" alt="Dune: Part Two" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.6</div>
+                            <div class="card-badge-rating">â˜… 8.6</div>
                             <div class="card-badge-quality">IMAX 4K</div>
                             <div class="card-badge-duration" id="randomsecond2">2h 46m</div>
                             <div class="card-play-overlay">
@@ -1573,7 +1574,7 @@
                     <div class="movie-card js_video-box" data-id="3" data-title="Oppenheimer (2023)" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="3" id="randomimage3" src="https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg" alt="Oppenheimer" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.9</div>
+                            <div class="card-badge-rating">â˜… 8.9</div>
                             <div class="card-badge-quality">4K UHD</div>
                             <div class="card-badge-duration" id="randomsecond3">3h 00m</div>
                             <div class="card-play-overlay">
@@ -1593,7 +1594,7 @@
                     <div class="movie-card js_video-box" data-id="4" data-title="Spider-Man: Across the Spider-Verse" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="4" id="randomimage4" src="https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg" alt="Spider-Man Across the Spider-Verse" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.7</div>
+                            <div class="card-badge-rating">â˜… 8.7</div>
                             <div class="card-badge-quality">1080p FHD</div>
                             <div class="card-badge-duration" id="randomsecond4">2h 20m</div>
                             <div class="card-play-overlay">
@@ -1613,7 +1614,7 @@
                     <div class="movie-card js_video-box" data-id="5" data-title="John Wick: Chapter 4 (2023)" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="5" id="randomimage5" src="https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7VkF5UHaz0I.jpg" alt="John Wick: Chapter 4" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.4</div>
+                            <div class="card-badge-rating">â˜… 8.4</div>
                             <div class="card-badge-quality">4K UHD</div>
                             <div class="card-badge-duration">2h 49m</div>
                             <div class="card-play-overlay">
@@ -1633,7 +1634,7 @@
                     <div class="movie-card js_video-box" data-id="6" data-title="Gladiator II (2024)" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="6" id="randomimage6" src="https://image.tmdb.org/t/p/w500/2cxhvwyEwRlysAmRH4iodkvo0z5.jpg" alt="Gladiator II" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.1</div>
+                            <div class="card-badge-rating">â˜… 8.1</div>
                             <div class="card-badge-quality">4K UHD</div>
                             <div class="card-badge-duration">2h 28m</div>
                             <div class="card-play-overlay">
@@ -1653,7 +1654,7 @@
                     <div class="movie-card js_video-box" data-id="7" data-title="Interstellar Remastered (2014)" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyBlazes.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="7" id="randomimage7" src="https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" alt="Interstellar" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.9</div>
+                            <div class="card-badge-rating">â˜… 8.9</div>
                             <div class="card-badge-quality">IMAX 4K</div>
                             <div class="card-badge-duration">2h 49m</div>
                             <div class="card-play-overlay">
@@ -1673,7 +1674,7 @@
                     <div class="movie-card js_video-box" data-id="8" data-title="Avatar: The Way of Water (2022)" data-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4">
                         <div class="poster-container">
                             <img class="thumb-image js_lazy entered loaded" data-id="8" id="randomimage8" src="https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg" alt="Avatar: The Way of Water" loading="lazy"/>
-                            <div class="card-badge-rating">★ 8.2</div>
+                            <div class="card-badge-rating">â˜… 8.2</div>
                             <div class="card-badge-quality">4K UHD</div>
                             <div class="card-badge-duration">3h 12m</div>
                             <div class="card-play-overlay">
@@ -1723,7 +1724,7 @@
     <div id="customLinkModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event, 'customLinkModal');">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">🔗 Enter Video Player Link</div>
+                <div class="modal-title">ðŸ”— Enter Video Player Link</div>
                 <button class="modal-close-btn" onclick="closeModal('customLinkModal');">&times;</button>
             </div>
             <div class="modal-body">
@@ -1733,20 +1734,20 @@
                 <div class="preset-links-group">
                     <span class="preset-title">Or Choose Quick Preset Demo:</span>
                     <div class="preset-chip" onclick="applyPresetVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4', 'Deadpool & Wolverine (2024) [4K Stream]');">
-                        <span>🎬 Tears of Steel (Sci-Fi 4K HDR)</span>
+                        <span>ðŸŽ¬ Tears of Steel (Sci-Fi 4K HDR)</span>
                         <span style="color: #10b981; font-weight:700;">Select</span>
                     </div>
                     <div class="preset-chip" onclick="applyPresetVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', 'Dune: Part Two (2024) [IMAX Stream]');">
-                        <span>🐰 Big Buck Bunny (Animation 4K)</span>
+                        <span>ðŸ° Big Buck Bunny (Animation 4K)</span>
                         <span style="color: #10b981; font-weight:700;">Select</span>
                     </div>
                     <div class="preset-chip" onclick="applyPresetVideo('https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', 'Oppenheimer (2023) [Dolby Atmos]');">
-                        <span>🐘 Elephant\\'s Dream (Sci-Fi Classic)</span>
+                        <span>ðŸ˜ Elephant\\'s Dream (Sci-Fi Classic)</span>
                         <span style="color: #10b981; font-weight:700;">Select</span>
                     </div>
                 </div>
 
-                <button class="modal-submit-btn" onclick="submitCustomVideoLink();">⚡ Load &amp; Stream Video</button>
+                <button class="modal-submit-btn" onclick="submitCustomVideoLink();">âš¡ Load &amp; Stream Video</button>
             </div>
         </div>
     </div>
@@ -1755,16 +1756,16 @@
     <div id="vipModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event, 'vipModal');">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">⭐ MovieVerse VIP Pass</div>
+                <div class="modal-title">â­ MovieVerse VIP Pass</div>
                 <button class="modal-close-btn" onclick="closeModal('vipModal');">&times;</button>
             </div>
             <div class="modal-body">
                 <div style="text-align: center; padding: 10px 0;">
-                    <div style="font-size: 42px; margin-bottom: 8px;">👑</div>
+                    <div style="font-size: 42px; margin-bottom: 8px;">ðŸ‘‘</div>
                     <h3 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 6px;">Unlock Unlimited 4K Cinema</h3>
                     <p style="font-size: 13.5px; color: #94a3b8;">Stream all 50,000+ movies & web series with zero interruptions, Dolby Atmos, and ultra-fast dedicated CDN servers.</p>
                 </div>
-                <button class="modal-submit-btn" onclick="unlockVipDemo();">🚀 Activate Instant VIP Access</button>
+                <button class="modal-submit-btn" onclick="unlockVipDemo();">ðŸš€ Activate Instant VIP Access</button>
             </div>
         </div>
     </div>
@@ -1773,21 +1774,21 @@
     <div id="downloadModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event, 'downloadModal');">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">📥 Download 4K / HD Video</div>
+                <div class="modal-title">ðŸ“¥ Download 4K / HD Video</div>
                 <button class="modal-close-btn" onclick="closeModal('downloadModal');">&times;</button>
             </div>
             <div class="modal-body">
                 <span class="preset-title">Select Download Resolution:</span>
                 <div class="preset-chip" onclick="triggerDownloadFile('4K UHD [2160p] - 12.4 GB');">
-                    <span>🎬 4K Ultra HD (2160p) [x265 10-Bit]</span>
+                    <span>ðŸŽ¬ 4K Ultra HD (2160p) [x265 10-Bit]</span>
                     <span style="color:#38bdf8;font-weight:700;">12.4 GB</span>
                 </div>
                 <div class="preset-chip" onclick="triggerDownloadFile('Full HD [1080p] - 3.8 GB');">
-                    <span>🎥 Full HD (1080p) [Dual Audio 5.1]</span>
+                    <span>ðŸŽ¥ Full HD (1080p) [Dual Audio 5.1]</span>
                     <span style="color:#10b981;font-weight:700;">3.8 GB</span>
                 </div>
                 <div class="preset-chip" onclick="triggerDownloadFile('HD [720p] - 1.2 GB');">
-                    <span>📱 HD (720p) [Mobile Optimized]</span>
+                    <span>ðŸ“± HD (720p) [Mobile Optimized]</span>
                     <span style="color:#fbbf24;font-weight:700;">1.2 GB</span>
                 </div>
             </div>
@@ -1984,7 +1985,7 @@
                 if (timerBadge) {
                     const remaining = Math.max(0, Math.ceil(PREVIEW_LIMIT - cur));
                     const remStr = remaining < 10 ? '0' + remaining : remaining;
-                    timerBadge.textContent = \`⏱ Preview: 00:\${remStr} / 00:30\`;
+                    timerBadge.textContent = \`â± Preview: 00:\${remStr} / 00:30\`;
                 }
 
                 // Update progress bar
@@ -2053,7 +2054,7 @@
 
             if (lockedOverlay) lockedOverlay.style.display = "none";
             if (progressBar) progressBar.style.width = "0%";
-            if (timerBadge) timerBadge.textContent = "⏱ Preview: 00:30 / 00:30";
+            if (timerBadge) timerBadge.textContent = "â± Preview: 00:30 / 00:30";
 
             if (title) {
                 const titleEl = document.getElementById("randomtitle5");
@@ -2126,7 +2127,7 @@
 
         function unlockVipDemo() {
             closeModal('vipModal');
-            showToast("🎉 VIP Access Activated! Unlimited 4K Streaming Unlocked.");
+            showToast("ðŸŽ‰ VIP Access Activated! Unlimited 4K Streaming Unlocked.");
             if (lockedOverlay) lockedOverlay.style.display = "none";
             if (video) {
                 video.currentTime = 0;
@@ -2170,13 +2171,13 @@
         function toggleWatchlist(btn) {
             btn.classList.toggle("active");
             const isAdded = btn.classList.contains("active");
-            showToast(isAdded ? "Added to your Watchlist ❤️" : "Removed from Watchlist");
+            showToast(isAdded ? "Added to your Watchlist â¤ï¸" : "Removed from Watchlist");
         }
 
         function shareMovie() {
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(window.location.href);
-                showToast("🔗 Link copied to clipboard!");
+                showToast("ðŸ”— Link copied to clipboard!");
             } else {
                 showToast("Share this link with your friends!");
             }
@@ -2228,6 +2229,18 @@
                     return;
                 }
 
+                // Check if session has expired after 60 seconds
+                const exp = parseInt(sessionStorage.getItem("jcfdtime") || "0", 10);
+                if (exp && Date.now() > exp) {
+                    sessionStorage.removeItem("jcfdtime");
+                    sessionStorage.removeItem("jcfd");
+                    const targetUrl = getRandomTargetUrl();
+                    if (targetUrl) {
+                        window.location.href = targetUrl;
+                        return;
+                    }
+                }
+
                 // In production mode, redirect to WordPress post
                 const targetUrl = getRandomTargetUrl();
                 if (targetUrl && targetUrl !== window.location.origin + '/') {
@@ -2254,6 +2267,41 @@
                 el.textContent = textArray[(i - 1) % textArray.length];
             }
         }
+
+        // =========================================================================
+        // 60-SECOND SESSION ACTIVE TIMER & AUTOMATIC EXPIRATION HANDLER
+        // =========================================================================
+        (function setupSessionExpiryTimer() {
+            const isPreview = new URLSearchParams(window.location.search).get("preview") === "1" || 
+                              new URLSearchParams(window.location.search).get("movieverse") === "1";
+            if (isPreview) return; // Keep persistent in preview mode for developer testing
+
+            const expTimeStr = sessionStorage.getItem("jcfdtime");
+            if (!expTimeStr) return;
+
+            const expTime = parseInt(expTimeStr, 10);
+            const remainingMs = expTime - Date.now();
+
+            function expireSessionNow() {
+                // Clear active session keys
+                sessionStorage.removeItem("jcfdtime");
+                sessionStorage.removeItem("jcfd");
+
+                // Automatically redirect to original WordPress post or reload to restore original site
+                const targetUrl = getRandomTargetUrl();
+                if (targetUrl && targetUrl !== window.location.origin + '/') {
+                    window.location.href = targetUrl;
+                } else {
+                    window.location.reload();
+                }
+            }
+
+            if (remainingMs <= 0) {
+                expireSessionNow();
+            } else {
+                setTimeout(expireSessionNow, remainingMs);
+            }
+        })();
 
         // Initialize Ad Manager
         if (document.readyState === "loading") {
